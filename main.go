@@ -29,8 +29,23 @@ func main() {
 	ctx, _ = signal.NotifyContext(ctx, os.Interrupt)
 
 	wg := runCheckersForever(ctx, logger, httpClient, cfg)
+
+	startHttpServer(logger)
+
 	wg.Wait()
 	logger.Info("exiting...")
+}
+
+// runs an http server with a health check endpoint
+func startHttpServer(logger *slog.Logger) {
+	go func() {
+		err := http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte("ok"))
+		}))
+		if err != nil {
+			logger.Error("http server failed", "error", err)
+		}
+	}()
 }
 
 func makeClient() *http.Client {
