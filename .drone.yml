@@ -1,0 +1,17 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+steps:
+  - name: build-and-push
+    image: plugins/docker
+    settings:
+      repo: mellena1/k8s-healthcheck
+      auto_tag: true
+      username: mellena1
+      password:
+        from_secret: password
+
+trigger:
+  branch:
+  - main
