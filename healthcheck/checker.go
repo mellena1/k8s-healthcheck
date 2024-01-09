@@ -22,6 +22,30 @@ func NewChecker(client *http.Client, check config.ServiceCheck) Checker {
 	}
 }
 
+func (c Checker) RunForever(ctx context.Context, logger *slog.Logger, frequency time.Duration) {
+	lastCheckTime := time.Now().Add(-1000 * time.Minute)
+
+	for {
+		if err := ctx.Err(); err != nil {
+			logger.Info("exiting checker", "error", err)
+			return
+		}
+
+		if time.Since(lastCheckTime) < frequency {
+			continue
+		}
+
+		if err := c.healthcheck(ctx); err != nil {
+			logger.Warn("failed health check", "error", err)
+		} else {
+			logger.Info("health check ok")
+		}
+		lastCheckTime = time.Now()
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func (c Checker) healthcheck(ctx context.Context) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.check.HTTPEndpoint(), nil)
 	if err != nil {
@@ -49,28 +73,4 @@ func (c Checker) healthcheck(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (c Checker) RunForever(ctx context.Context, logger *slog.Logger, frequency time.Duration) {
-	lastCheckTime := time.Now().Add(-1000 * time.Minute)
-
-	for {
-		if err := ctx.Err(); err != nil {
-			logger.Info("exiting checker", "error", err)
-			return
-		}
-
-		if time.Since(lastCheckTime) < frequency {
-			continue
-		}
-
-		if err := c.healthcheck(ctx); err != nil {
-			logger.Warn("failed health check", "error", err)
-		} else {
-			logger.Info("health check ok")
-		}
-		lastCheckTime = time.Now()
-
-		time.Sleep(1 * time.Second)
-	}
 }
