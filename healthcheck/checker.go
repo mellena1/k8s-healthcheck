@@ -22,27 +22,22 @@ func NewChecker(client *http.Client, check config.ServiceCheck) Checker {
 	}
 }
 
-func (c Checker) RunForever(ctx context.Context, logger *slog.Logger, frequency time.Duration) {
-	lastCheckTime := time.Now().Add(-1000 * time.Minute)
+func (c Checker) RunForever(ctx context.Context, logger *slog.Logger) {
+	ticker := time.NewTicker(time.Duration(c.check.CheckFrequency))
+	defer ticker.Stop()
 
 	for {
-		if err := ctx.Err(); err != nil {
-			logger.Info("exiting checker", "error", err)
+		select {
+		case <-ctx.Done():
+			logger.Info("exiting checker", "error", ctx.Err())
 			return
+		case <-ticker.C:
+			if err := c.healthcheck(ctx); err != nil {
+				logger.Warn("failed health check", "error", err)
+			} else {
+				logger.Info("health check ok")
+			}
 		}
-
-		if time.Since(lastCheckTime) < frequency {
-			continue
-		}
-
-		if err := c.healthcheck(ctx); err != nil {
-			logger.Warn("failed health check", "error", err)
-		} else {
-			logger.Info("health check ok")
-		}
-		lastCheckTime = time.Now()
-
-		time.Sleep(1 * time.Second)
 	}
 }
 

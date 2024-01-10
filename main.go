@@ -65,7 +65,7 @@ func runCheckersForever(ctx context.Context, logger *slog.Logger, client *http.C
 			checkLogger := logger.With("check", check.String())
 			checkLogger.Info("starting checker")
 			sc := healthcheck.NewChecker(client, check)
-			sc.RunForever(ctx, checkLogger, 15*time.Minute)
+			sc.RunForever(ctx, checkLogger)
 			wg.Done()
 		}(sc)
 	}

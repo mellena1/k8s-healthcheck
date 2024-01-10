@@ -4,7 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 )
+
+type duration time.Duration
+
+func (d *duration) UnmarshalJSON(b []byte) error {
+	if b[0] == '"' {
+		b = b[1 : len(b)-1]
+	}
+
+	dur, err := time.ParseDuration(string(b))
+	if err != nil {
+		return err
+	}
+
+	*d = duration(dur)
+	return nil
+}
 
 type ServiceCheck struct {
 	Namespace string `json:"namespace"`
@@ -12,7 +29,8 @@ type ServiceCheck struct {
 	Port      int    `json:"port"`
 	Path      string `json:"path"`
 
-	HealthCheckUUID string `json:"healthCheckUUID"`
+	HealthCheckUUID string   `json:"healthCheckUUID"`
+	CheckFrequency  duration `json:"checkFrequency"`
 }
 
 func (sc ServiceCheck) HTTPEndpoint() string {
