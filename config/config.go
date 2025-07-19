@@ -28,7 +28,7 @@ type ServiceCheck struct {
 	Service      string            `json:"service"`
 	Port         int               `json:"port"`
 	Path         string            `json:"path"`
-	ExtraHeaders map[string]string `json:"extraHeader"`
+	ExtraHeaders map[string]string `json:"extraHeaders"`
 
 	HealthCheckUUID string   `json:"healthCheckUUID"`
 	CheckFrequency  duration `json:"checkFrequency"`
