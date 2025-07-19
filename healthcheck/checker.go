@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mellena1/k8s-healthcheck/config"
@@ -48,7 +49,13 @@ func (c Checker) healthcheck(ctx context.Context) error {
 	}
 
 	for k, v := range c.check.ExtraHeaders {
-		req.Header.Add(k, v)
+		if strings.ToLower(k) == "host" {
+			// host is handled differently in net/http
+			// see: https://stackoverflow.com/a/50559020
+			req.Host = v
+		} else {
+			req.Header.Set(k, v)
+		}
 	}
 
 	resp, err := c.client.Do(req)
