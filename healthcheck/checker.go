@@ -47,6 +47,10 @@ func (c Checker) healthcheck(ctx context.Context) error {
 		return fmt.Errorf("failed to make req: %w", err)
 	}
 
+	for k, v := range c.check.ExtraHeaders {
+		req.Header.Add(k, v)
+	}
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("%s failed health check: %w", c.check, err)

@@ -24,10 +24,11 @@ func (d *duration) UnmarshalJSON(b []byte) error {
 }
 
 type ServiceCheck struct {
-	Namespace string `json:"namespace"`
-	Service   string `json:"service"`
-	Port      int    `json:"port"`
-	Path      string `json:"path"`
+	Namespace    string            `json:"namespace"`
+	Service      string            `json:"service"`
+	Port         int               `json:"port"`
+	Path         string            `json:"path"`
+	ExtraHeaders map[string]string `json:"extraHeader"`
 
 	HealthCheckUUID string   `json:"healthCheckUUID"`
 	CheckFrequency  duration `json:"checkFrequency"`
